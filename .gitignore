@@ -1,6 +1,5 @@
 infra/bin/
 infra/node_modules/
-code
 code/target
 
 .DS_Store

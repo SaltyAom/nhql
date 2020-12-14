@@ -75,5 +75,3 @@ If you're deploying to dedicated project uncomment `enableCloudRun` and `depends
 49  // { dependsOn: enableCloudRun }
 50  }
 ```
-
-
