@@ -1,10 +1,14 @@
 # NhQL
 Unofficial GraphQL Reverse Proxy Server for nHentai written in Rust.
 
-## Feature
+## Benefit
+- Open GraphQL Proxy API Server for nHentai
 - High Performance and Low Memory Usage
 - GraphQL and Playground
 - One Command Deploy to Google Cloud
+
+## Why
+<img alt="I'm horni" src="https://user-images.githubusercontent.com/35027979/102120620-64501e00-3e75-11eb-9824-6ae0664200e0.JPG" width=300 />
 
 ## Built with and powered by
 - Rust
