@@ -1,20 +1,27 @@
 use actix_web::{ get, HttpResponse, web::{ Path, ServiceConfig }};
 
-use super::service::get_hentai;
+use super::service::{compose_empty_nh_api_data, get_hentai, map_nh_api, is_nhentai};
 
-#[get("/h/{id}")]
+#[get("/{id}")]
 async fn proxy(Path(id): Path<String>) -> HttpResponse {
+    if !is_nhentai(&id) {
+        return HttpResponse::Ok()
+            .json(compose_empty_nh_api_data(&id))
+    }
+
     let nhentai = get_hentai(&id).await;
 
     if nhentai.is_none() {
-        return HttpResponse::InternalServerError()
-            .body("Internal Server Error")
+        return HttpResponse::Ok()
+            .json(compose_empty_nh_api_data(&id))
     }
- 
+
+    let nh_api = map_nh_api(nhentai.unwrap());
+
     HttpResponse::Ok()
         .content_type("application/json")
         .json(
-            nhentai.unwrap()
+            nh_api
         )
 }
 

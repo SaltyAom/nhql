@@ -1,77 +1,88 @@
+use hashbrown::HashMap;
+
 use serde::{ Serialize, Deserialize };
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApi {
-    id: u32,
-    title: NHApiTitle,
-    images: NHApiImages,
-    info: NHApiInfo,
-    metadata: NHApiMetadata
+    pub id: u32,
+    pub title: NHApiTitle,
+    pub images: NHApiImages,
+    pub info: NHApiInfo,
+    pub metadata: NHApiMetadata
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiTitle {
-    display: String,
-    english: String,
-    japanese: String
+    pub display: String,
+    pub english: String,
+    pub japanese: String
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiImages {
-    pages: NHApiPages,
-    cover: NHApiPage
+    pub pages: NHApiPages,
+    pub cover: NHApiPage
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiPage {
-    link: String,
-    info: NHApiPageInfo
+    pub link: String,
+    pub info: NHApiPageInfo
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiPageInfo {
-    r#type: String,
-    width: u16,
-    height: u16
+    pub r#type: String,
+    pub width: u16,
+    pub height: u16
 }
 
 pub type NHApiPages = Vec<NHApiPage>;
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiInfo {
-    amount: u16,
-    favorite: u32,
-    upload: NHApiInfoUpload
+    pub amount: u16,
+    pub favorite: u32,
+    pub upload: NHApiInfoUpload
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiInfoUpload {
-    original: u32,
-    parsed: String
+    pub original: u32,
+    pub parsed: String
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiMetadata {
-    artist: NHApiArtist,
-    tags: NHApiTags,
-    language: String
+    pub artist: NHApiArtist,
+    pub tags: NHApiTags,
+    pub language: String
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiArtist {
-    name: String,
-    count: u32,
-    url: String
+    pub name: String,
+    pub count: u32,
+    pub url: String
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct NHApiTag {
-    name: String,
-    count: u32,
-    url: String
+    pub name: String,
+    pub count: u32,
+    pub url: String
 }
 
 pub type NHApiTags = Vec<NHApiTag>;
 
-pub const NH_API_PAGE_TYPES: [&'static str; 3] = ["jpg", "png", "gif"];
-pub const NH_API_LANGUAGES: [&'static str; 4] = ["japanese", "chinese", "translated", "english"];
+lazy_static! {
+    pub static ref NH_API_PAGE_TYPES_MAP: HashMap<&'static str, &'static str> = {
+        let mut type_map = HashMap::new();
+
+        type_map.insert("j", "jpg");
+        type_map.insert("p", "png");
+        type_map.insert("g", "gif");
+
+        type_map
+    };
+}
