@@ -1,75 +1,77 @@
 use hashbrown::HashMap;
 
+use juniper::GraphQLObject;
+
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApi {
-    pub id: u32,
+    pub id: i32,
     pub title: NHApiTitle,
     pub images: NHApiImages,
     pub info: NHApiInfo,
     pub metadata: NHApiMetadata
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiTitle {
     pub display: String,
     pub english: String,
     pub japanese: String
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiImages {
     pub pages: NHApiPages,
     pub cover: NHApiPage
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiPage {
     pub link: String,
     pub info: NHApiPageInfo
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiPageInfo {
     pub r#type: String,
-    pub width: u16,
-    pub height: u16
+    pub width: i32,
+    pub height: i32
 }
 
 pub type NHApiPages = Vec<NHApiPage>;
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiInfo {
-    pub amount: u16,
-    pub favorite: u32,
+    pub amount: i32,
+    pub favorite: i32,
     pub upload: NHApiInfoUpload
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiInfoUpload {
-    pub original: u32,
+    pub original: i32,
     pub parsed: String
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiMetadata {
     pub artist: NHApiArtist,
     pub tags: NHApiTags,
     pub language: String
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiArtist {
     pub name: String,
-    pub count: u32,
+    pub count: i32,
     pub url: String
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, GraphQLObject)]
 pub struct NHApiTag {
     pub name: String,
-    pub count: u32,
+    pub count: i32,
     pub url: String
 }
 

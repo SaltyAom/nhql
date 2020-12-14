@@ -1,5 +1,3 @@
-use actix_web::client::Client;
-
 use crate::{models::{nhapi::model::{NHApi, NHApiArtist, NHApiImages, NHApiInfo, NHApiInfoUpload, NHApiMetadata, NHApiPage, NHApiPageInfo, NHApiPages, NHApiSearch, NHApiTag, NHApiTags, NHApiTitle, NH_API_PAGE_TYPES_MAP}, nhentai::model::{NHentai, NHentaiGroup, NHentaiImages, NHentaiTags, NHentaiTitle}}};
 
 use chrono::NaiveDateTime;
@@ -8,58 +6,50 @@ use std::str::FromStr;
 
 const NHENTAI_NOT_FOUND: &'static str = "{\"error\": \"does not exist\"}";
 
-pub async fn get_hentai(id: &str) -> Option<NHentai> {
-    let client = Client::default();
-
+pub async fn get_hentai(id: &str) -> NHApi {
     let proxy_server = format!("{}/{}", "https://nhentai.net/api/gallery", id);
 
     // Create request builder and send request
-    let response = client.get(proxy_server)
-       .send()
+    let response = reqwest::get(&proxy_server)
        .await;
 
     if response.is_err() {
-        return None
+        return compose_empty_nh_api_data(id)
     }
 
-    let mut response_data = response.unwrap();
+    let response_data = response.unwrap();
 
     if response_data.status() == 404 {
-        return None
+        return compose_empty_nh_api_data(id)
     }
 
-    let response_stream = response_data.body().await.unwrap().to_vec();
-    let body = String::from_utf8(response_stream).unwrap();
+    let body = response_data.text().await.unwrap();
 
     if body == NHENTAI_NOT_FOUND {
-        return None
+        return compose_empty_nh_api_data(id)
     }
 
-    Some(map_nhentai(&body))
+    map_nh_api(map_nhentai(&body))
 }
 
-pub async fn search_hentai(search_key: &str, page: u16) -> Option<NHApiSearch> {
-    let client = Client::default();
-
+pub async fn search_hentai(search_key: &str, page: u16) -> NHApiSearch {
     let proxy_server = format!("https://nhentai.net/api/galleries/search?query=${}&page=${}", search_key, page);
 
     // Create request builder and send request
-    let response = client.get(proxy_server)
-       .send()
+    let response = reqwest::get(&proxy_server)
        .await;
 
     if response.is_err() {
-        return None
+        return vec![]
     }
 
-    let mut response_data = response.unwrap();
-    let response_stream = response_data.body().await.unwrap().to_vec();
-    let body = String::from_utf8(response_stream).unwrap();
+    let response_data = response.unwrap();
+    let body = response_data.text().await.unwrap();
 
     let nhentai_search_response = map_nhentai_group(&body).result;
     let nhapi_search: NHApiSearch = nhentai_search_response.into_iter().map(|hentai| map_nh_api(hentai)).collect();
 
-    Some(nhapi_search)
+    nhapi_search
 }
 
 pub fn map_nhentai(raw: &str) -> NHentai {
@@ -80,14 +70,14 @@ pub fn map_nhentai_group(raw: &str) -> NHentaiGroup {
 
 pub fn map_nh_api(nhentai: NHentai) -> NHApi {
     NHApi {
-        id: nhentai.id,
+        id: nhentai.id as i32,
         title: map_title(nhentai.title),
         images: map_images(&nhentai.media_id, &nhentai.images),
         info: NHApiInfo {
-            amount: nhentai.images.pages.len() as u16,
-            favorite: nhentai.num_favorites,
+            amount: nhentai.images.pages.len() as i32,
+            favorite: nhentai.num_favorites as i32,
             upload: NHApiInfoUpload {
-                original: nhentai.upload_date,
+                original: nhentai.upload_date as i32,
                 parsed: NaiveDateTime::from_timestamp(nhentai.upload_date as i64, 0).to_string()
             }
         },
@@ -105,24 +95,28 @@ pub fn map_title(title: NHentaiTitle) -> NHApiTitle {
 
 pub fn map_images(media_id: &str, images: &NHentaiImages) -> NHApiImages {
     let pages: NHApiPages = images.pages.iter().enumerate().map(|(index, page)| {
+        let extension = map_extension(&page.t);
+
         NHApiPage {
-            link: compose_page_link(media_id, &(index + 1).to_string(), &page.t),
+            link: compose_page_link(media_id, &(index + 1).to_string(), &extension),
             info: NHApiPageInfo {
-                r#type: map_extension(&page.t).to_string(),
-                width: page.w,
-                height: page.h
+                r#type: extension.to_string(),
+                width: page.w as i32,
+                height: page.h as i32
             }
         }
     }).collect();
 
+    let extension = map_extension(&images.cover.t);
+
     NHApiImages {
         pages: pages,
         cover: NHApiPage {
-            link: compose_page_link(media_id, "cover", &images.cover.t),
+            link: compose_page_link(media_id, "cover", extension),
             info: NHApiPageInfo {
-                r#type: map_extension(&images.cover.t).to_string(),
-                width: images.cover.w,
-                height: images.cover.h
+                r#type: extension.to_string(),
+                width: images.cover.w as i32,
+                height: images.cover.h as i32
             }
         }
     }
@@ -134,9 +128,7 @@ pub fn map_extension(extension_type: &str) -> &&str {
     extension
 }
 
-pub fn compose_page_link(media_id: &str, page: &str, extension_type: &str) -> String {
-    let extension = map_extension(extension_type).to_string();
-    
+pub fn compose_page_link(media_id: &str, page: &str, extension: &str) -> String {
     format!("https://t.nhentai.net/galleries/{}/{}.{}", media_id, page, extension)
 }
 
@@ -155,7 +147,7 @@ pub fn map_metadata(tags: &NHentaiTags) -> NHApiMetadata {
             "artist" => {
                 artist = NHApiArtist {
                     name: tag.name.to_owned(),
-                    count: tag.count,
+                    count: tag.count as i32,
                     url: compose_tag_url(&tag.url)
                 }
             },
@@ -167,7 +159,7 @@ pub fn map_metadata(tags: &NHentaiTags) -> NHApiMetadata {
             _ => {
                 nh_api_tags.push(NHApiTag {
                     name: tag.name.to_owned(),
-                    count: tag.count,
+                    count: tag.count  as i32,
                     url: compose_tag_url(&tag.url)
                 })
             }
@@ -187,7 +179,7 @@ pub fn compose_tag_url(tag: &str) -> String {
 
 pub fn compose_empty_nh_api_data(id: &str) -> NHApi {
     NHApi {
-        id: u32::from_str(id).unwrap_or(0),
+        id: u32::from_str(id).unwrap_or(0) as i32,
         title: NHApiTitle {
             display: "".to_owned(),
             english: "".to_owned(),
