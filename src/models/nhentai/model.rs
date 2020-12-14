@@ -1,3 +1,6 @@
+use serde::{ Serialize, Deserialize };
+
+#[derive(Serialize, Deserialize)]
 pub struct NHentai {
     id: u32,
     media_id: String,
@@ -10,26 +13,30 @@ pub struct NHentai {
     num_favorites: u32
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct NHentaiTitle {
     english: String,
     japanese: String,
     pretty: String
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct NHentaiImages {
     pages: NHentaiPages,
     cover: NHentaiPage,
     thumbnail: NHentaiPage
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct NHentaiPage {
     t: String,
-    w: String,
-    h: String
+    w: u16,
+    h: u16
 }
 
 pub type NHentaiPages = Vec<NHentaiPage>;
 
+#[derive(Serialize, Deserialize)]
 pub struct NHentaiTag {
     id: u32,
     r#type: String,
