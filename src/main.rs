@@ -1,4 +1,5 @@
 mod modules;
+mod models;
 
 use modules::{
     landing::controller::landing_module,
