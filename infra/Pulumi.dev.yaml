@@ -1,0 +1,3 @@
+config:
+  gcp:project: saltyaom-casual
+  gcp:region: asia-east1
