@@ -32,7 +32,7 @@ pub async fn get_hentai(id: &str) -> NHApi {
     map_nh_api(map_nhentai(&body))
 }
 
-pub async fn search_hentai(search_key: &str, page: u16) -> NHApiSearch {
+pub async fn search_hentai(search_key: &str, page: i32) -> NHApiSearch {
     let proxy_server = format!("https://nhentai.net/api/galleries/search?query=${}&page=${}", search_key, page);
 
     // Create request builder and send request

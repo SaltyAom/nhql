@@ -1,8 +1,10 @@
-
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, RootNode};
 
-use crate::{models::nhapi::model::{NHApi, NHApiSearch}, modules::proxy::service::search_hentai};
-use crate::modules::proxy::service::{ get_hentai };
+use crate::modules::proxy::service::get_hentai;
+use crate::{
+    models::nhapi::model::{NHApi, NHApiSearch},
+    modules::proxy::service::search_hentai,
+};
 
 pub struct Query {}
 
@@ -14,8 +16,8 @@ impl Query {
         get_hentai(code).await
     }
 
-    pub async fn searchHentai(keyword: String) -> NHApiSearch {
-        search_hentai(&keyword, 1).await
+    pub async fn searchHentai(keyword: String, page: i32) -> NHApiSearch {
+        search_hentai(&keyword, page).await
     }
 }
 
