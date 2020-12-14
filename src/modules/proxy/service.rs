@@ -1,6 +1,6 @@
 use actix_web::client::Client;
 
-use crate::{models::{nhapi::model::{NHApi, NHApiArtist, NHApiImages, NHApiInfo, NHApiInfoUpload, NHApiMetadata, NHApiPage, NHApiPages, NHApiPageInfo, NHApiTag, NHApiTags, NHApiTitle, NH_API_PAGE_TYPES_MAP}, nhentai::model::{NHentai, NHentaiImages, NHentaiTags, NHentaiTitle}}};
+use crate::{models::{nhapi::model::{NHApi, NHApiArtist, NHApiImages, NHApiInfo, NHApiInfoUpload, NHApiMetadata, NHApiPage, NHApiPageInfo, NHApiPages, NHApiSearch, NHApiTag, NHApiTags, NHApiTitle, NH_API_PAGE_TYPES_MAP}, nhentai::model::{NHentai, NHentaiGroup, NHentaiImages, NHentaiTags, NHentaiTitle}}};
 
 use chrono::NaiveDateTime;
 
@@ -38,10 +38,44 @@ pub async fn get_hentai(id: &str) -> Option<NHentai> {
     Some(map_nhentai(&body))
 }
 
+pub async fn search_hentai(search_key: &str, page: u16) -> Option<NHApiSearch> {
+    let client = Client::default();
+
+    let proxy_server = format!("https://nhentai.net/api/galleries/search?query=${}&page=${}", search_key, page);
+
+    // Create request builder and send request
+    let response = client.get(proxy_server)
+       .send()
+       .await;
+
+    if response.is_err() {
+        return None
+    }
+
+    let mut response_data = response.unwrap();
+    let response_stream = response_data.body().await.unwrap().to_vec();
+    let body = String::from_utf8(response_stream).unwrap();
+
+    let nhentai_search_response = map_nhentai_group(&body).result;
+    let nhapi_search: NHApiSearch = nhentai_search_response.into_iter().map(|hentai| map_nh_api(hentai)).collect();
+
+    Some(nhapi_search)
+}
+
 pub fn map_nhentai(raw: &str) -> NHentai {
     let nhentai: NHentai = serde_json::from_str(raw).unwrap();
 
     nhentai
+}
+
+pub fn map_nhentai_group(raw: &str) -> NHentaiGroup {
+    let nhentai_group: NHentaiGroup = serde_json::from_str(raw).unwrap_or(NHentaiGroup {
+        result: vec![],
+        num_pages: 0,
+        per_page: 0
+    });
+
+    nhentai_group
 }
 
 pub fn map_nh_api(nhentai: NHentai) -> NHApi {
