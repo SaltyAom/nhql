@@ -26,7 +26,7 @@ const location = gcp.config.region || 'asia-east1'
 // })
 
 const service = new gcp.cloudrun.Service(
-	'nhql',
+	projectName,
 	{
 		location,
 		template: {
@@ -49,7 +49,7 @@ const service = new gcp.cloudrun.Service(
 	// { dependsOn: enableCloudRun }
 )
 
-const iam = new gcp.cloudrun.IamMember('nhql-iam', {
+const iam = new gcp.cloudrun.IamMember(`${projectName}-iam`, {
 	service: service.name,
 	location,
 	role: 'roles/run.invoker',
