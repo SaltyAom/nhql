@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
         let cors = Cors::default()
             .allow_any_origin()
             .send_wildcard()
-            .allowed_methods(vec!["GET"])
+            .allowed_methods(vec!["GET", "POST"])
             .allowed_headers(vec![http::header::CONTENT_TYPE, http::header::ACCEPT])
             .max_age(86400);
 
