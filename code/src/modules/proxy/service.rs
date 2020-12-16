@@ -98,7 +98,7 @@ pub fn map_images(media_id: &str, images: &NHentaiImages) -> NHApiImages {
         let extension = map_extension(&page.t);
 
         NHApiPage {
-            link: compose_page_link(media_id, &(index + 1).to_string(), &extension),
+            link: compose_page_link(media_id, (index + 1) as i32, &extension),
             info: NHApiPageInfo {
                 r#type: extension.to_string(),
                 width: page.w as i32,
@@ -112,7 +112,7 @@ pub fn map_images(media_id: &str, images: &NHentaiImages) -> NHApiImages {
     NHApiImages {
         pages: pages,
         cover: NHApiPage {
-            link: compose_page_link(media_id, "cover", extension),
+            link: compose_cover_link(media_id, extension),
             info: NHApiPageInfo {
                 r#type: extension.to_string(),
                 width: images.cover.w as i32,
@@ -128,8 +128,12 @@ pub fn map_extension(extension_type: &str) -> &&str {
     extension
 }
 
-pub fn compose_page_link(media_id: &str, page: &str, extension: &str) -> String {
-    format!("https://t.nhentai.net/galleries/{}/{}.{}", media_id, page, extension)
+pub fn compose_page_link(media_id: &str, page: i32, extension: &str) -> String {
+    format!("https://i.nhentai.net/galleries/{}/{}.{}", media_id, page, extension)
+}
+
+pub fn compose_cover_link(media_id: &str, extension: &str) -> String {
+    format!("https://t.nhentai.net/galleries/{}/cover.{}", media_id, extension)
 }
 
 pub fn map_metadata(tags: &NHentaiTags) -> NHApiMetadata {
