@@ -56,8 +56,12 @@ Unofficial GraphQL Reverse Proxy Server for nHentai written in Rust.
 ## Infra Structure
 Same as starter template of Pulumi Google Cloud TypeScript Starter.
 
-- index.ts
-    - Infrastructure configuration
+- config.ts
+    - infra configuration
+- docker
+    - docker deployment
+- cloud run
+    - cloud run deployment
 
 ## Requirement
 - [Google Cloud Account](https://cloud.google.com/)
