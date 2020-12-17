@@ -1,4 +1,4 @@
-use crate::{models::{nhapi::model::{NHApi, NHApiArtist, NHApiImages, NHApiInfo, NHApiInfoUpload, NHApiMetadata, NHApiPage, NHApiPageInfo, NHApiPages, NHApiSearch, NHApiTag, NHApiTags, NHApiTitle, NH_API_PAGE_TYPES_MAP}, nhentai::model::{NHentai, NHentaiGroup, NHentaiImages, NHentaiTags, NHentaiTitle}}};
+use crate::{models::{nhapi::model::{NHApi, NHApiArtist, NHApiImages, NHApiInfo, NHApiInfoUpload, NHApiMetadata, NHApiPage, NHApiPageInfo, NHApiPages, NHApiSearch, NHApiTag, NHApiTags, NHApiTitle, NH_API_PAGE_TYPES_MAP}, nhentai::model::{NHentai, DynamicNHentai, NHentaiGroup, DynamicNHentaiGroup, NHentaiImages, NHentaiTags, NHentaiTitle}}};
 
 use chrono::NaiveDateTime;
 
@@ -29,11 +29,11 @@ pub async fn get_hentai(id: &str) -> NHApi {
         return compose_empty_nh_api_data(id)
     }
 
-    map_nh_api(map_nhentai(&body))
+    map_nh_api(map_nhentai(parse_nhentai_from_string(&body)))
 }
 
 pub async fn search_hentai(search_key: &str, page: i32) -> NHApiSearch {
-    let proxy_server = format!("https://nhentai.net/api/galleries/search?query=${}&page=${}", search_key, page);
+    let proxy_server = format!("https://nhentai.net/api/galleries/search?query={}&page={}", search_key, page);
 
     // Create request builder and send request
     let response = reqwest::get(&proxy_server)
@@ -52,18 +52,50 @@ pub async fn search_hentai(search_key: &str, page: i32) -> NHApiSearch {
     nhapi_search
 }
 
-pub fn map_nhentai(raw: &str) -> NHentai {
-    let nhentai: NHentai = serde_json::from_str(raw).unwrap();
+pub fn parse_nhentai_from_string(raw: &str) -> DynamicNHentai {
+    let nhentai: DynamicNHentai = serde_json::from_str(raw).unwrap();
 
     nhentai
 }
 
+pub fn map_nhentai(nhentai: DynamicNHentai) -> NHentai {
+    let stringified_id = serde_json::to_string(&nhentai.id).unwrap();
+    let id: u32 = stringified_id.parse().unwrap();
+
+    NHentai {
+        id: id,
+        media_id: nhentai.media_id,
+        title: nhentai.title,
+        images: nhentai.images,
+        scanlator: nhentai.scanlator,
+        upload_date: nhentai.upload_date,
+        tags: nhentai.tags,
+        num_pages: nhentai.num_pages,
+        num_favorites: nhentai.num_favorites
+    }
+}
+
 pub fn map_nhentai_group(raw: &str) -> NHentaiGroup {
-    let nhentai_group: NHentaiGroup = serde_json::from_str(raw).unwrap_or(NHentaiGroup {
-        result: vec![],
-        num_pages: 0,
-        per_page: 0
-    });
+    let dynamic_nhentai_group: DynamicNHentaiGroup = serde_json::from_str(raw).map_err(|e| {
+        println!("Parse Group Error: {:?}", e);
+    }).unwrap_or_else(|_|
+        DynamicNHentaiGroup {
+            result: vec![],
+            num_pages: 0,
+            per_page: 0
+        }
+    );
+
+    let nhentais: Vec<NHentai> =  dynamic_nhentai_group.result
+        .into_iter()
+        .map(|hentai| map_nhentai(hentai))
+        .collect();
+
+    let nhentai_group: NHentaiGroup = NHentaiGroup {
+        result: nhentais,
+        num_pages: dynamic_nhentai_group.num_pages,
+        per_page: dynamic_nhentai_group.per_page
+    };
 
     nhentai_group
 }

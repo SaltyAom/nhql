@@ -18,7 +18,7 @@ COPY . .
 RUN cargo install --path .
 
 # Runtime
-FROM gcr.io/distroless/cc
+FROM gcr.io/distroless/cc-debian10
 
 COPY --from=build /usr/local/cargo/bin/nhql /usr/local/bin/nhql
 # COPY --from=build /usr/src/nhql/static static

@@ -1,4 +1,9 @@
-use serde::{ Deserialize };
+use serde::Deserialize;
+
+use crate::services::serialize::{
+    model::MaybeI32OrString,
+    service::parse_title
+};
 
 #[derive(Deserialize)]
 pub struct NHentai {
@@ -14,9 +19,25 @@ pub struct NHentai {
 }
 
 #[derive(Deserialize)]
+pub struct DynamicNHentai {
+    pub id: MaybeI32OrString,
+    pub media_id: String,
+    pub title: NHentaiTitle,
+    pub images: NHentaiImages,
+    pub scanlator: String,
+    pub upload_date: u32,
+    pub tags: NHentaiTags,
+    pub num_pages: u16,
+    pub num_favorites: u32
+}
+
+#[derive(Deserialize)]
 pub struct NHentaiTitle {
+    #[serde(deserialize_with="parse_title")]
     pub english: String,
+    #[serde(deserialize_with="parse_title")]
     pub japanese: String,
+    #[serde(deserialize_with="parse_title")]
     pub pretty: String
 }
 
@@ -50,6 +71,13 @@ pub type NHentaiTags = Vec<NHentaiTag>;
 #[derive(Deserialize)]
 pub struct NHentaiGroup {
     pub result: Vec<NHentai>,
+    pub num_pages: u16,
+    pub per_page: u8
+}
+
+#[derive(Deserialize)]
+pub struct DynamicNHentaiGroup {
+    pub result: Vec<DynamicNHentai>,
     pub num_pages: u16,
     pub per_page: u8
 }
