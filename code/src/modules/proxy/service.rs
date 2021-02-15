@@ -1,12 +1,12 @@
-use crate::{models::{nhapi::model::{NHApi, NHApiArtist, NHApiImages, NHApiInfo, NHApiInfoUpload, NHApiMetadata, NHApiPage, NHApiPageInfo, NHApiPages, NHApiSearch, NHApiTag, NHApiTags, NHApiTitle, NH_API_PAGE_TYPES_MAP}, nhentai::model::{NHentai, DynamicNHentai, NHentaiGroup, DynamicNHentaiGroup, NHentaiImages, NHentaiTags, NHentaiTitle}}};
-
 use chrono::NaiveDateTime;
+use cached::proc_macro::cached;
 
-use std::str::FromStr;
+use crate::{models::{nhapi::model::{NHApi, NHApiArtist, NHApiImages, NHApiInfo, NHApiInfoUpload, NHApiMetadata, NHApiPage, NHApiPageInfo, NHApiPages, NHApiSearch, NHApiTag, NHApiTags, NHApiTitle, NHResponse, NHSearchResponse, NH_API_PAGE_TYPES_MAP}, nhentai::model::{NHentai, DynamicNHentai, NHentaiGroup, DynamicNHentaiGroup, NHentaiImages, NHentaiTags, NHentaiTitle}}};
 
 const NHENTAI_NOT_FOUND: &'static str = "{\"error\": \"does not exist\"}";
 
-pub async fn get_hentai(id: &str) -> NHApi {
+#[cached]
+pub async fn get_hentai(id: i32) -> NHResponse {
     let proxy_server = format!("{}/{}", "https://nhentai.net/api/gallery", id);
 
     // Create request builder and send request
@@ -29,10 +29,15 @@ pub async fn get_hentai(id: &str) -> NHApi {
         return compose_empty_nh_api_data(id)
     }
 
-    map_nh_api(map_nhentai(parse_nhentai_from_string(&body)))
+    NHResponse {
+        success: true,
+        info: "".to_owned(),
+        data: map_nh_api(map_nhentai(parse_nhentai_from_string(&body)))
+    }
 }
 
-pub async fn search_hentai(search_key: &str, page: i32) -> NHApiSearch {
+#[cached]
+pub async fn search_hentai(search_key: String, page: i32) -> NHSearchResponse {
     let proxy_server = format!("https://nhentai.net/api/galleries/search?query={}&page={}", search_key, page);
 
     // Create request builder and send request
@@ -40,7 +45,11 @@ pub async fn search_hentai(search_key: &str, page: i32) -> NHApiSearch {
        .await;
 
     if response.is_err() {
-        return vec![]
+        return NHSearchResponse {
+            success: false,
+            info: "Not found".to_owned(),
+            data: vec![]
+        }
     }
 
     let response_data = response.unwrap();
@@ -49,7 +58,11 @@ pub async fn search_hentai(search_key: &str, page: i32) -> NHApiSearch {
     let nhentai_search_response = map_nhentai_group(&body).result;
     let nhapi_search: NHApiSearch = nhentai_search_response.into_iter().map(|hentai| map_nh_api(hentai)).collect();
 
-    nhapi_search
+    NHSearchResponse {
+        success: true,
+        info: "".to_owned(),
+        data: nhapi_search
+    }
 }
 
 pub fn parse_nhentai_from_string(raw: &str) -> DynamicNHentai {
@@ -213,55 +226,49 @@ pub fn compose_tag_url(tag: &str) -> String {
     format!("https://nhentai.net{}", tag)
 }
 
-pub fn compose_empty_nh_api_data(id: &str) -> NHApi {
-    NHApi {
-        id: u32::from_str(id).unwrap_or(0) as i32,
-        title: NHApiTitle {
-            display: "".to_owned(),
-            english: "".to_owned(),
-            japanese: "".to_owned()
-        },
-        images: NHApiImages {
-            pages: vec![],
-            cover: NHApiPage {
-                link: "".to_owned(),
-                info: NHApiPageInfo {
-                    r#type: "".to_owned(),
-                    width: 0,
-                    height: 0
-                }
-            }
-        },
-        info: NHApiInfo {
-            amount: 0,
-            favorite: 0,
-            upload: NHApiInfoUpload {
-                original: 0,
-                parsed: "".to_owned()
-            }
-        },
-        metadata: NHApiMetadata {
-            artist: NHApiArtist {
-                name: "".to_owned(),
-                count: 0,
-                url: compose_tag_url("")
+pub fn compose_empty_nh_api_data(id: i32) -> NHResponse {
+    NHResponse {
+        success: false,
+        info: "Not found".to_owned(),
+        data: NHApi {
+            id: id,
+            title: NHApiTitle {
+                display: "".to_owned(),
+                english: "".to_owned(),
+                japanese: "".to_owned()
             },
-            tags: vec![],
-            language: "".to_owned()
-        },
-    }
-}
-
-pub fn is_numeric(str: &str) -> bool {
-    for c in str.chars() {
-        if !c.is_numeric() {
-            return false;
+            images: NHApiImages {
+                pages: vec![],
+                cover: NHApiPage {
+                    link: "".to_owned(),
+                    info: NHApiPageInfo {
+                        r#type: "".to_owned(),
+                        width: 0,
+                        height: 0
+                    }
+                }
+            },
+            info: NHApiInfo {
+                amount: 0,
+                favorite: 0,
+                upload: NHApiInfoUpload {
+                    original: 0,
+                    parsed: "".to_owned()
+                }
+            },
+            metadata: NHApiMetadata {
+                artist: NHApiArtist {
+                    name: "".to_owned(),
+                    count: 0,
+                    url: compose_tag_url("")
+                },
+                tags: vec![],
+                language: "".to_owned()
+            }
         }
     }
-
-    return true;
 }
 
-pub fn is_nhentai(input: &str) -> bool {
-    is_numeric(input) && input.len() <= 6
+pub fn is_nhentai(input: i32) -> bool {
+    input < 1_000_000
 }
