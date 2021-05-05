@@ -11,7 +11,7 @@ use crate::services::schema::service::Schema;
 pub async fn graphiql() -> HttpResponse {
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
-        .header("Cache-Control", "max-age=259200")
+        // .header("Cache-Control", "max-age=259200")
         .body(
             graphiql_source("/graphql", None)
         )
@@ -25,7 +25,7 @@ pub async fn graphql(
     let res = request.execute(&data, &()).await;
     
     Ok(HttpResponse::Ok()
-        .header("Cache-Control", "max-age=259200")
+        // .header("Cache-Control", "max-age=259200")
         .json(res)
     )
 }
