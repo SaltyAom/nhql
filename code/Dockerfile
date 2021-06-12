@@ -1,7 +1,10 @@
 # * --- Build Stage ---
-FROM rust:1.51-alpine AS builder
+FROM rust:1.52.1 AS builder
+ENV PKG_CONFIG_ALLOW_CROSS=1
+
 WORKDIR /usr/src/
-RUN apk add --no-cache musl-dev ca-certificates cmake musl-utils libressl-dev
+
+# RUN apk add --no-cache musl-dev ca-certificates cmake musl-utils libressl-dev
 
 # Setup tools for building
 RUN rustup target add x86_64-unknown-linux-musl
@@ -16,11 +19,8 @@ RUN RUSTFLAGS='-C target-cpu=native' cargo build --release
 
 # Build project
 COPY src ./src
-# COPY static ./static
 
-ENV PKG_CONFIG_ALLOW_CROSS=1
-
-RUN cargo install --target x86_64-unknown-linux-musl --path .
+RUN cargo install --path .
 
 # * --- Compression Stage ---
 FROM alpine:3.13 AS compressor
@@ -34,7 +34,7 @@ RUN strip nhql -o app-striped
 RUN upx app-striped --best --lzma -o app
 
 # * --- Running Stage ---
-FROM scratch
+FROM gcr.io/distroless/cc
 
 COPY --from=compressor /usr/app/app .
 # COPY static ./static

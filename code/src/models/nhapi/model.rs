@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use juniper::GraphQLObject;
 
 use serde::Serialize;
@@ -91,15 +89,3 @@ pub struct NHApiTag {
 
 pub type NHApiTags = Vec<NHApiTag>;
 pub type NHApiSearch = Vec<NHApi>;
-
-lazy_static! {
-    pub static ref NH_API_PAGE_TYPES_MAP: HashMap<&'static str, &'static str> = {
-        let mut type_map = HashMap::new();
-
-        type_map.insert("j", "jpg");
-        type_map.insert("p", "png");
-        type_map.insert("g", "gif");
-
-        type_map
-    };
-}

@@ -1,7 +1,34 @@
 use chrono::NaiveDateTime;
 use cached::proc_macro::cached;
 
-use crate::{models::{nhapi::model::{NHApi, NHApiArtist, NHApiImages, NHApiInfo, NHApiInfoUpload, NHApiMetadata, NHApiPage, NHApiPageInfo, NHApiPages, NHApiSearch, NHApiTag, NHApiTags, NHApiTitle, NHResponse, NHSearchResponse, NH_API_PAGE_TYPES_MAP}, nhentai::model::{NHentai, DynamicNHentai, NHentaiGroup, DynamicNHentaiGroup, NHentaiImages, NHentaiTags, NHentaiTitle}}};
+use crate::models::{
+    nhapi::model::{
+        NHApi, 
+        NHApiArtist, 
+        NHApiImages, 
+        NHApiInfo, 
+        NHApiInfoUpload, 
+        NHApiMetadata, 
+        NHApiPage, 
+        NHApiPageInfo, 
+        NHApiPages, 
+        NHApiSearch, 
+        NHApiTag, 
+        NHApiTags, 
+        NHApiTitle, 
+        NHResponse, 
+        NHSearchResponse
+    }, 
+    nhentai::model::{
+        NHentai, 
+        DynamicNHentai, 
+        NHentaiGroup, 
+        DynamicNHentaiGroup, 
+        NHentaiImages, 
+        NHentaiTags, 
+        NHentaiTitle
+    }
+};
 
 const NHENTAI_NOT_FOUND: &'static str = "{\"error\": \"does not exist\"}";
 
@@ -31,7 +58,7 @@ pub async fn get_hentai(id: i32) -> NHResponse {
 
     NHResponse {
         success: true,
-        info: "".to_owned(),
+        info: String::from(""),
         data: map_nh_api(map_nhentai(parse_nhentai_from_string(&body)))
     }
 }
@@ -60,7 +87,7 @@ pub async fn search_hentai(search_key: String, page: i32) -> NHSearchResponse {
 
     NHSearchResponse {
         success: true,
-        info: "".to_owned(),
+        info: String::from(""),
         data: nhapi_search
     }
 }
@@ -76,7 +103,7 @@ pub fn map_nhentai(nhentai: DynamicNHentai) -> NHentai {
     let id: u32 = stringified_id.parse().unwrap();
 
     NHentai {
-        id: id,
+        id,
         media_id: nhentai.media_id,
         title: nhentai.title,
         images: nhentai.images,
@@ -155,7 +182,7 @@ pub fn map_images(media_id: &str, images: &NHentaiImages) -> NHApiImages {
     let extension = map_extension(&images.cover.t);
 
     NHApiImages {
-        pages: pages,
+        pages,
         cover: NHApiPage {
             link: compose_cover_link(media_id, extension),
             info: NHApiPageInfo {
@@ -167,10 +194,13 @@ pub fn map_images(media_id: &str, images: &NHentaiImages) -> NHApiImages {
     }
 }
 
-pub fn map_extension(extension_type: &str) -> &&str {
-    let extension = NH_API_PAGE_TYPES_MAP.get(extension_type).unwrap_or_else(|| &"");
-
-    extension
+pub fn map_extension(extension_type: &str) -> &str {
+    match extension_type {
+        "j" => "jpg",
+        "p" => "png",
+        "g" => "gif",
+        _ => "jpg"
+    }
 }
 
 pub fn compose_page_link(media_id: &str, page: i32, extension: &str) -> String {
@@ -183,7 +213,7 @@ pub fn compose_cover_link(media_id: &str, extension: &str) -> String {
 
 pub fn map_metadata(tags: &NHentaiTags) -> NHApiMetadata {
     let mut artist = NHApiArtist {
-        name: "".to_owned(),
+        name: String::from(""),
         count: 0,
         url: compose_tag_url("")
     };
@@ -216,8 +246,8 @@ pub fn map_metadata(tags: &NHentaiTags) -> NHApiMetadata {
     }
 
     NHApiMetadata {
-        artist: artist,
-        language: language,
+        artist,
+        language,
         tags: nh_api_tags
     }
 }
@@ -231,18 +261,18 @@ pub fn compose_empty_nh_api_data(id: i32) -> NHResponse {
         success: false,
         info: "Not found".to_owned(),
         data: NHApi {
-            id: id,
+            id,
             title: NHApiTitle {
-                display: "".to_owned(),
-                english: "".to_owned(),
-                japanese: "".to_owned()
+                display: String::from(""),
+                english: String::from(""),
+                japanese: String::from("")
             },
             images: NHApiImages {
                 pages: vec![],
                 cover: NHApiPage {
-                    link: "".to_owned(),
+                    link: String::from(""),
                     info: NHApiPageInfo {
-                        r#type: "".to_owned(),
+                        r#type: String::from(""),
                         width: 0,
                         height: 0
                     }
@@ -253,17 +283,17 @@ pub fn compose_empty_nh_api_data(id: i32) -> NHResponse {
                 favorite: 0,
                 upload: NHApiInfoUpload {
                     original: 0,
-                    parsed: "".to_owned()
+                    parsed: String::from("")
                 }
             },
             metadata: NHApiMetadata {
                 artist: NHApiArtist {
-                    name: "".to_owned(),
+                    name: String::from(""),
                     count: 0,
                     url: compose_tag_url("")
                 },
                 tags: vec![],
-                language: "".to_owned()
+                language: String::from("")
             }
         }
     }

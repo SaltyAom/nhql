@@ -5,9 +5,9 @@ import { projectName, imageName } from '../config'
 // ? Google Cloud Run Deployment
 const location = gcp.config.region || 'asia-east1'
 
-const enableCloudRun = new gcp.projects.Service('EnableCloudRun', {
-	service: 'run.googleapis.com'
-})
+// const enableCloudRun = new gcp.projects.Service('EnableCloudRun', {
+// 	service: 'run.googleapis.com'
+// })
 
 const service = new gcp.cloudrun.Service(
 	projectName,
@@ -29,8 +29,21 @@ const service = new gcp.cloudrun.Service(
 			}
 		}
 	},
-	{ dependsOn: enableCloudRun }
+	// { dependsOn: enableCloudRun }
 )
+
+// const defaultDomainMapping = new gcp.cloudrun.DomainMapping(
+// 	'defaultDomainMapping',
+// 	{
+// 		location,
+// 		metadata: {
+// 			namespace: 'nhql'
+// 		},
+// 		spec: {
+// 			routeName: 'nhql'
+// 		}
+// 	}
+// )
 
 const iam = new gcp.cloudrun.IamMember(`${projectName}-iam`, {
 	service: service.name,

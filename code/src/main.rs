@@ -1,18 +1,15 @@
-#[macro_use]
-extern crate lazy_static;
 extern crate juniper;
 
 mod modules;
 mod models;
 mod services;
 
-use actix_web::{ HttpServer, App, middleware::Compress };
-// use actix_cors::Cors;
+use actix_web::{ HttpServer, App, middleware::Compress, web::route };
 
 use modules::{
-    landing::controller::landing_module,
-    proxy::controller::proxy_module,
-    graphql::controller::graphql_module
+    status::controller::{ status, fallback },
+    proxy::controller::proxy,
+    graphql::controller::graphql
 };
 
 use services::schema::service::create_schema;
@@ -24,19 +21,15 @@ async fn main() -> std::io::Result<()> {
     let schema = Arc::new(create_schema());
 
     HttpServer::new(move || {
-        // let cors = Cors::default()
-        //     .allow_any_origin()
-        //     .send_wildcard()
-        //     .allowed_methods(vec!["GET", "POST"])
-        //     .allowed_headers(vec![http::header::CONTENT_TYPE, http::header::ACCEPT])
-        //     .max_age(86400);
-
         App::new()
             .wrap(Compress::default())
             .data(schema.clone())
-            .configure(landing_module)
-            .configure(proxy_module)
-            .configure(graphql_module)
+            .configure(status)
+            .configure(proxy)
+            .configure(graphql)
+            .default_service(
+                route().to(fallback)
+            )
     })
     .bind("0.0.0.0:8080")?
     .run()

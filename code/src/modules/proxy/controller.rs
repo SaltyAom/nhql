@@ -3,12 +3,13 @@ use actix_web::{ get, HttpResponse, web::{ Path, ServiceConfig }};
 use super::service::{compose_empty_nh_api_data, search_hentai, get_hentai, is_nhentai};
 
 #[get("/h/{id}")]
-async fn proxy(path: Path<i32>) -> HttpResponse {
+async fn proxy_handler(path: Path<i32>) -> HttpResponse {
     let id = path.into_inner();
 
     if !is_nhentai(id) {
         return HttpResponse::Ok()
-            // .header("Cache-Control", "max-age=259200")
+            .append_header(("Cache-Control", "max-age=259200"))
+            .append_header(("access-control-allow-origin", "*"))
             .json(compose_empty_nh_api_data(id))
     }
 
@@ -26,7 +27,8 @@ async fn proxy_search(path: Path<String>) -> HttpResponse {
 
     HttpResponse::Ok()
         .content_type("application/json")
-        // .header("Cache-Control", "max-age=259200")
+        .append_header(("Cache-Control", "max-age=259200"))
+        .append_header(("access-control-allow-origin", "*"))
         .json(
             search_result
         )
@@ -40,15 +42,16 @@ async fn proxy_search_with_page(path: Path<(String, i32)>) -> HttpResponse {
 
     HttpResponse::Ok()
         .content_type("application/json")
-        // .header("Cache-Control", "max-age=259200")
+        .append_header(("Cache-Control", "max-age=259200"))
+        .append_header(("access-control-allow-origin", "*"))
         .json(
             search_result
         )
 }
 
-pub fn proxy_module(config: &mut ServiceConfig) {
+pub fn proxy(config: &mut ServiceConfig) {
     config
-        .service(proxy)
+        .service(proxy_handler)
         .service(proxy_search)
         .service(proxy_search_with_page);
 }
