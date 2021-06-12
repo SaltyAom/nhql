@@ -5,16 +5,16 @@ import { projectName, imageName } from '../config'
 // ? Google Cloud Run Deployment
 const location = gcp.config.region || 'asia-east1'
 
-// const enableCloudRun = new gcp.projects.Service('EnableCloudRun', {
-// 	service: 'run.googleapis.com'
-// })
-
 const service = new gcp.cloudrun.Service(
 	projectName,
 	{
 		location,
+		// metadata: {
+		// 	namespace: projectName
+		// },
 		template: {
 			spec: {
+				containerConcurrency: 1000,
 				containers: [
 					{
 						image: imageName,
@@ -28,8 +28,7 @@ const service = new gcp.cloudrun.Service(
 				]
 			}
 		}
-	},
-	// { dependsOn: enableCloudRun }
+	}
 )
 
 // const defaultDomainMapping = new gcp.cloudrun.DomainMapping(
@@ -37,10 +36,10 @@ const service = new gcp.cloudrun.Service(
 // 	{
 // 		location,
 // 		metadata: {
-// 			namespace: 'nhql'
+// 			namespace: projectName
 // 		},
 // 		spec: {
-// 			routeName: 'nhql'
+// 			routeName: service.name
 // 		}
 // 	}
 // )

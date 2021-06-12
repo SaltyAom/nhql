@@ -5,7 +5,7 @@ const AMIYA: &'static str = r#"<html lang="en">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="display: flex; justify-content: center; align-items:center; width: 100%; min-height: 100vh; padding: 20px; box-sizing: border-box;">
+<body style="display: flex; justify-content: center; align-items:center; width: 100%; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box;">
     <img 
         src="https://meme.saltyaom.com/meme/amiya%20-%20twitter%20blushing.jpg" 
         alt="Amiya"
