@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, RootNode};
 
 use crate::modules::proxy::service::get_hentai;
@@ -6,7 +7,7 @@ use crate::{
     modules::proxy::service::search_hentai,
 };
 
-pub struct Query {}
+pub struct Query;
 
 #[graphql_object]
 impl Query {
@@ -22,5 +23,9 @@ impl Query {
 pub type Schema = RootNode<'static, Query, EmptyMutation, EmptySubscription<()>>;
 
 pub fn create_schema() -> Schema {
-    Schema::new(Query {}, EmptyMutation::new(), EmptySubscription::new())
+    Schema::new(
+        Query {}, 
+        EmptyMutation::new(), 
+        EmptySubscription::new()
+    )
 }

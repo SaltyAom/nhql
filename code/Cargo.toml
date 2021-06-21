@@ -1,22 +1,26 @@
 [package]
 name = "nhql"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["SaltyAom"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.release]
+opt-level = 's'
+lto = true
+panic = 'abort'
+codegen-units = 1
+
 [dependencies]
-actix-web = "3.3.2"
-actix-cors = "0.5.3"
-reqwest = "0.10.9"
+actix-web = "4.0.0-beta.6"
 
-juniper = "0.15.3"
-openssl = "0.10.29"
+reqwest = { version = "0.11.3", default-features = false, features = ["rustls-tls"] }
 
-serde = "1.0.123"
-serde_json = "1.0.62"
-chrono = "0.4"
+juniper = "0.15.6"
 
-lazy_static = "1.4.0"
+serde = "1.0.126"
+serde_json = "1.0.64"
+chrono = "0.4.19"
+
 cached = "0.23.0"

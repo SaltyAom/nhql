@@ -1,7 +1,7 @@
 {
     "name": "infra",
     "scripts": {
-        "up": "cd docker && pulumi up && cd ../cloud\\ run && pulumi up"
+        "up": "cd docker && pulumi up -y && cd ../cloud\\ run && pulumi up -y"
     },
     "devDependencies": {
         "@types/node": "^10.0.0"

@@ -11,27 +11,29 @@ use crate::services::schema::service::Schema;
 pub async fn graphiql() -> HttpResponse {
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
-        .header("Cache-Control", "max-age=259200")
+        .append_header(("Cache-Control", "max-age=259200"))
+        .append_header(("access-control-allow-origin", "*"))
         .body(
             graphiql_source("/graphql", None)
         )
 }
 
 #[post("/graphql")]
-pub async fn graphql(
+pub async fn graphql_handler(
     data: web::Data<Arc<Schema>>,
     request: web::Json<GraphQLRequest>
 ) -> Result<HttpResponse, Error> {
     let res = request.execute(&data, &()).await;
     
     Ok(HttpResponse::Ok()
-        .header("Cache-Control", "max-age=259200")
+        .append_header(("Cache-Control", "max-age=259200"))
+        .append_header(("access-control-allow-origin", "*"))
         .json(res)
     )
 }
 
-pub fn graphql_module(config: &mut ServiceConfig) {
+pub fn graphql(config: &mut ServiceConfig) {
     config
         .service(graphiql)
-        .service(graphql);
+        .service(graphql_handler);
 }
