@@ -4,7 +4,7 @@ mod modules;
 mod models;
 mod services;
 
-use actix_web::{ HttpServer, App, middleware::Compress, web::{ route, Data }, http };
+use actix_web::{ HttpServer, App, middleware::Compress, web::{ route, Data } };
 
 use modules::{
     status::controller::{ status, fallback },
@@ -22,15 +22,10 @@ async fn main() -> std::io::Result<()> {
     let schema = Arc::new(create_schema());
 
     HttpServer::new(move || {
-        let cors = Cors::default()
-            .allow_any_origin()
-            .send_wildcard()
-            .allowed_methods(vec!["GET", "POST"])
-            .allowed_headers(vec![http::header::CONTENT_TYPE, http::header::ACCEPT])
-            .max_age(86400);
-        
+        let cors = Cors::permissive();
+
         App::new()
-        .wrap(cors)
+            .wrap(cors)
             .wrap(Compress::default())
             .app_data(Data::new(schema.clone()))
             .configure(status)

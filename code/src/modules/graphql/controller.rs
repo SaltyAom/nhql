@@ -26,8 +26,6 @@ pub async fn graphql_handler(
     
     Ok(HttpResponse::Ok()
         .append_header(("Cache-Control", "max-age=259200"))
-        .append_header(("Access-Control-Allow-Origin", "*"))
-        .append_header(("Access-Control-Allow-Headers", "*"))
         .json(res)
     )
 }
