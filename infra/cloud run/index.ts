@@ -31,7 +31,7 @@ const service = new gcp.cloudrun.Service(
 	}
 )
 
-// const defaultDomainMapping = new gcp.cloudrun.DomainMapping(
+// const domainMapping = new gcp.cloudrun.DomainMapping(
 // 	'defaultDomainMapping',
 // 	{
 // 		location,
@@ -39,17 +39,10 @@ const service = new gcp.cloudrun.Service(
 // 			namespace: projectName
 // 		},
 // 		spec: {
-// 			routeName: service.name
+// 			routeName: 'api.opener.studio',
 // 		}
 // 	}
 // )
-
-const iam = new gcp.cloudrun.IamMember(`${projectName}-iam`, {
-	service: service.name,
-	location,
-	role: 'roles/run.invoker',
-	member: 'allUsers'
-})
 
 export const revision = service.statuses[0].latestCreatedRevisionName
 export const url = service.statuses[0].url
