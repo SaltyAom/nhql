@@ -4,7 +4,7 @@ mod modules;
 mod models;
 mod services;
 
-use actix_web::{ HttpServer, App, middleware::Compress, web::route };
+use actix_web::{ HttpServer, App, middleware::Compress, web::{ route, Data } };
 
 use modules::{
     status::controller::{ status, fallback },
@@ -23,7 +23,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .wrap(Compress::default())
-            .data(schema.clone())
+            .app_data(Data::new(schema.clone()))
             .configure(status)
             .configure(proxy)
             .configure(graphql)
