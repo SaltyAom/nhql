@@ -22,7 +22,8 @@ async fn main() -> std::io::Result<()> {
     let schema = Arc::new(create_schema());
 
     HttpServer::new(move || {
-        let cors = Cors::permissive();
+        let cors = Cors::permissive()
+            .allow_any_origin();
 
         App::new()
             .wrap(cors)
