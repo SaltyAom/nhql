@@ -1,0 +1,5 @@
+steps:
+- name: gcr.io/cloud-builders/docker
+  args: ["build","--network=cloudbuild", "."]
+  timeout: 1500s
+timeout: 1500s
