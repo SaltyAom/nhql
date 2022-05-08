@@ -1,3 +1,5 @@
+###### Note: Depreacated in favor of [Akashic](https://github.com/saltyaom/akashic), but you can still use this
+
 # NhQL
 Unofficial GraphQL Reverse Proxy Server for nHentai written in Rust.
 
